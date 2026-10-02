@@ -243,7 +243,12 @@ def page_preprocessing() -> None:
             st.markdown("**Skill co-occurrence** (how often two skills are required in the same posting)")
             co = pd.DataFrame(mh.values.T @ mh.values, index=mh.columns.str.replace("skill_", ""),
                               columns=mh.columns.str.replace("skill_", ""))
-            np.fill_diagonal(co.values, 0)
+            
+            # Safe diagonal zero-out for newer Python/NumPy versions
+            co_matrix = co.to_numpy().copy()
+            np.fill_diagonal(co_matrix, 0)
+            co = pd.DataFrame(co_matrix, index=co.index, columns=co.columns)
+
             fig = px.imshow(co, aspect="auto", color_continuous_scale="Purples", labels=dict(color="Co-occurrences"))
             fig.update_layout(height=520, margin=dict(l=0, r=0, t=10, b=0))
             st.plotly_chart(fig)
